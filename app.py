@@ -99,12 +99,18 @@ def df_results():
     ]
     rows=[]
     for n,r in enumerate(st.session_state.interactions,1):
+        i_antes = int(r.get("antes", 0))
+        i_despues = int(r.get("despues", 0))
         rows.append({
-            "N°":n,"Acción":r["accion"],"Factor":r["factor"],
-            "Naturaleza":"Positivo" if r["signo"]>0 else "Negativo",
-            "I sin medidas":r["antes"],"Clase inicial":r["clase_antes"],
-            "I residual":r["despues"],"Clase residual":r["clase_despues"],
-            "Reducción |I|":abs(r["antes"])-abs(r["despues"]),
+            "N°":n,
+            "Acción":r["accion"],
+            "Factor":r["factor"],
+            "Naturaleza":"Positivo" if r.get("signo", -1)>0 else "Negativo",
+            "I sin medidas":i_antes,
+            "Clase inicial":cls(i_antes),
+            "I residual":i_despues,
+            "Clase residual":cls(i_despues),
+            "Reducción |I|":abs(i_antes)-abs(i_despues),
             "Medida":r.get("medida","")
         })
     return pd.DataFrame(rows, columns=columns)
@@ -627,7 +633,15 @@ with tabs[6]:
                 st.session_state.project=data.get("project",st.session_state.project)
                 st.session_state.actions=data.get("actions",st.session_state.actions)
                 st.session_state.factors=pd.DataFrame(data.get("factors",FACTORS))
-                st.session_state.interactions=data.get("interactions",[])
+
+                imported = data.get("interactions", [])
+                for r in imported:
+                    # Compatibilidad con JSON guardados por versiones anteriores.
+                    if "antes" in r:
+                        r["clase_antes"] = cls(int(r.get("antes", 0)))
+                    if "despues" in r:
+                        r["clase_despues"] = cls(int(r.get("despues", 0)))
+                st.session_state.interactions=imported
                 st.rerun()
         except Exception as e: st.error(f"No se pudo leer el archivo: {e}")
 
