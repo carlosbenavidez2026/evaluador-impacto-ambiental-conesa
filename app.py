@@ -203,18 +203,22 @@ def pdf_bytes():
     story.append(Spacer(1, 0.15*cm))
 
     datos = [
-        ["Proyecto", p.get("nombre", "")],
-        ["Ubicación", p.get("ubicacion", "")],
-        ["Responsable / evaluador", p.get("responsable", "")],
-        ["Etapa principal", p.get("etapa", "")],
-        ["Descripción", p.get("descripcion", "")]
+        [Paragraph("<b>Proyecto</b>", styles["TextoInforme"]),
+         Paragraph(str(p.get("nombre", "")), styles["TextoInforme"])],
+        [Paragraph("<b>Ubicación</b>", styles["TextoInforme"]),
+         Paragraph(str(p.get("ubicacion", "")), styles["TextoInforme"])],
+        [Paragraph("<b>Responsable / evaluador</b>", styles["TextoInforme"]),
+         Paragraph(str(p.get("responsable", "")), styles["TextoInforme"])],
+        [Paragraph("<b>Etapa principal</b>", styles["TextoInforme"]),
+         Paragraph(str(p.get("etapa", "")), styles["TextoInforme"])],
+        [Paragraph("<b>Descripción</b>", styles["TextoInforme"]),
+         Paragraph(str(p.get("descripcion", "")), styles["TextoInforme"])]
     ]
-    tabla_datos = Table(datos, colWidths=[4.0*cm, 12.5*cm])
+    tabla_datos = Table(datos, colWidths=[4.2*cm, 12.3*cm])
     tabla_datos.setStyle(TableStyle([
         ("GRID",(0,0),(-1,-1),0.4,colors.grey),
         ("BACKGROUND",(0,0),(0,-1),colors.lightgrey),
-        ("FONTNAME",(0,0),(0,-1),"Helvetica-Bold"),
-        ("FONTSIZE",(0,0),(-1,-1),8),
+                ("FONTSIZE",(0,0),(-1,-1),8),
         ("VALIGN",(0,0),(-1,-1),"TOP"),
         ("LEFTPADDING",(0,0),(-1,-1),5),
         ("RIGHTPADDING",(0,0),(-1,-1),5),
