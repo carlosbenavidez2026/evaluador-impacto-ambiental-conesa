@@ -1,0 +1,23 @@
+{
+  "project": {
+    "nombre": "Construcción del Puente Chugsén–Matara",
+    "ubicacion": "Matara, Cajamarca",
+    "responsable": "",
+    "etapa": "Construcción",
+    "descripcion": "Ejemplo inicial para evaluación ambiental."
+  },
+  "actions": [
+    "Campamento y almacén",
+    "Movimiento de tierras y excavación",
+    "Obras de concreto (estribos, tablero)",
+    "Defensas ribereñas",
+    "Tránsito vehicular sobre el puente"
+  ],
+  "factors": [
+    {"factor":"Agua superficial","medio":"Físico","uip":140},
+    {"factor":"Suelo y geomorfología","medio":"Físico","uip":90},
+    {"factor":"Hidrobiología","medio":"Biológico","uip":95},
+    {"factor":"Accesibilidad","medio":"Socioeconómico","uip":110}
+  ],
+  "interactions": []
+}
