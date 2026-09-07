@@ -76,6 +76,10 @@ def init():
 init()
 
 def df_results():
+    columns = [
+        "N°","Acción","Factor","Naturaleza","I sin medidas","Clase inicial",
+        "I residual","Clase residual","Reducción |I|","Medida"
+    ]
     rows=[]
     for n,r in enumerate(st.session_state.interactions,1):
         rows.append({
@@ -86,16 +90,28 @@ def df_results():
             "Reducción |I|":abs(r["antes"])-abs(r["despues"]),
             "Medida":r.get("medida","")
         })
-    return pd.DataFrame(rows)
+    return pd.DataFrame(rows, columns=columns)
 
 def excel_bytes():
-    b=io.BytesIO()
-    with pd.ExcelWriter(b,engine="openpyxl") as w:
-        pd.DataFrame([st.session_state.project]).to_excel(w,"Proyecto",index=False)
-        pd.DataFrame({"Acciones":st.session_state.actions}).to_excel(w,"Acciones",index=False)
-        st.session_state.factors.to_excel(w,"Factores",index=False)
-        df_results().to_excel(w,"Matriz_Impactos",index=False)
-    b.seek(0); return b.getvalue()
+    b = io.BytesIO()
+
+    proyecto_df = pd.DataFrame([st.session_state.project])
+    acciones_df = pd.DataFrame({"Acciones": list(st.session_state.actions)})
+    factores_df = st.session_state.factors.copy()
+    resultados_df = df_results()
+
+    # Asegurar estructura válida aun cuando todavía no existan interacciones.
+    if factores_df.empty:
+        factores_df = pd.DataFrame(columns=["factor", "medio", "uip"])
+
+    with pd.ExcelWriter(b, engine="openpyxl", mode="w") as writer:
+        proyecto_df.to_excel(writer, sheet_name="Proyecto", index=False)
+        acciones_df.to_excel(writer, sheet_name="Acciones", index=False)
+        factores_df.to_excel(writer, sheet_name="Factores", index=False)
+        resultados_df.to_excel(writer, sheet_name="Matriz_Impactos", index=False)
+
+    b.seek(0)
+    return b.getvalue()
 
 def pdf_bytes():
     b=io.BytesIO()
@@ -255,8 +271,25 @@ with tabs[6]:
     j=json.dumps(payload,ensure_ascii=False,indent=2).encode("utf-8")
     c1,c2,c3=st.columns(3)
     c1.download_button("⬇️ JSON",j,"evaluacion_ambiental_conesa.json","application/json",use_container_width=True)
-    c2.download_button("⬇️ Excel",excel_bytes(),"matriz_evaluacion_ambiental.xlsx","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",use_container_width=True)
-    c3.download_button("⬇️ PDF",pdf_bytes(),"reporte_evaluacion_ambiental.pdf","application/pdf",use_container_width=True)
+
+    try:
+        excel_data = excel_bytes()
+        c2.download_button(
+            "⬇️ Excel", excel_data, "matriz_evaluacion_ambiental.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True
+        )
+    except Exception as exc:
+        c2.error(f"No se pudo generar Excel: {exc}")
+
+    try:
+        pdf_data = pdf_bytes()
+        c3.download_button(
+            "⬇️ PDF", pdf_data, "reporte_evaluacion_ambiental.pdf",
+            "application/pdf", use_container_width=True
+        )
+    except Exception as exc:
+        c3.error(f"No se pudo generar PDF: {exc}")
     up=st.file_uploader("Importar proyecto JSON",type=["json"])
     if up:
         try:
